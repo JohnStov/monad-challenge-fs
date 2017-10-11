@@ -33,13 +33,31 @@ let randString3 () =
     let l3 = fst (randLetter s2)
     [l1; l2; l3] |> System.String.Concat
 
-let generalA (g : Gen<'a>) (f : 'a -> 'a) =
+let generalA (f : 'a -> 'a) (g : Gen<'a>)=
     fun s -> 
         let a, s' = g s
         f a, s'
 
-let randEven = generalA rand (fun x -> x * bigint 2)
+let randEven = generalA (fun x -> x * bigint 2) rand
 
-let randOdd = generalA randEven (fun x -> x + bigint 1)
+let randOdd = generalA (fun x -> x + bigint 1) randEven
 
-let randTen = generalA randEven (fun x -> x * bigint 5)
+let randTen = generalA (fun x -> x * bigint 5)randEven 
+
+let generalPair (genA : Gen<'a>) (genB : Gen<'b>) : Gen<'a * 'b> =
+    fun s ->
+        let a, s1 = genA s
+        let b, s2 = genB s1
+        (a, b), s2
+
+let randPair = generalPair randLetter rand
+
+let generalB (f: 'a -> 'b -> 'c) (genA : Gen<'a>) (genB : Gen<'b>) : Gen<'c> =
+    fun s ->
+        let a, s1 = genA s
+        let b, s2 = genB s1
+        (f a b), s2
+
+let generalPair2 genA genB = generalB (fun a  b -> a, b) genA genB
+    
+let randPair2 = generalPair2 randLetter rand
