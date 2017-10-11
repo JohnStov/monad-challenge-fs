@@ -62,7 +62,15 @@ let generalPair2 genA genB = generalB (fun a  b -> a, b) genA genB
     
 let randPair2 = generalPair2 randLetter rand
 
+let mkGen a : Gen<'a> =
+    fun s -> a, s
+
+let genTwo (genA : Gen<'a>) (f: 'a -> Gen<'b>) : Gen<'b> =
+    fun s ->
+        let a, s1 = genA s
+        (f a) s1
+
 let rec repRandom gens : Gen<'a list> =
     match gens with
-             | [] -> fun s -> ([], s)
-             | h::t -> generalB (fun a b -> a::b) h (repRandom t)
+    | [] -> mkGen []
+    | h::t -> generalB (fun a b -> a::b) h (repRandom t)
